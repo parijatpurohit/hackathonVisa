@@ -1,0 +1,37 @@
+package com.visa.gagoel.fingerprintauth;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+public class fingerprintAuthRes extends AppCompatActivity {
+    private ImageView successIcon;
+    private TextView successText;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_fingerprint_auth_res);
+        successIcon = (ImageView) findViewById(R.id.imageView);
+        successText = (TextView) findViewById(R.id.textView);
+        String authMessage;
+        Bundle extras = getIntent().getExtras();
+        if(extras == null) {
+            authMessage = null;
+        } else {
+            authMessage = extras.getString("AUTH");
+        }
+
+        if( authMessage.equals("Authenticated")){
+            successIcon.setImageResource(R.drawable.ic_fingerprint_success);
+            successText.setText("Authenticated Successfully");
+        }
+        else if(authMessage.equals("Not Authenticated")){
+            successIcon.setImageResource(R.drawable.ic_fingerprint_error);
+            successText.setText("Authentication Failed. Number of attempts exceeded");
+        }else {
+
+        }
+    }
+}

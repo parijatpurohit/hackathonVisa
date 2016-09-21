@@ -1,0 +1,92 @@
+package com.visa.gagoel.fingerprintauth;
+
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.hardware.fingerprint.FingerprintManager;
+import android.os.CancellationSignal;
+import android.support.v4.app.ActivityCompat;
+import android.view.View;
+import android.widget.Toast;
+
+/**
+ * Created by gagoel on 9/21/2016.
+ */
+public class FingerprintHandler extends FingerprintManager.AuthenticationCallback {
+
+    private CancellationSignal cancellationSignal;
+    private Context appContext;
+    private int noOfAttempts=0;
+
+    public FingerprintHandler(Context context) {
+        appContext = context;
+    }
+
+    public void startAuth(FingerprintManager manager,
+                          FingerprintManager.CryptoObject cryptoObject) {
+
+        cancellationSignal = new CancellationSignal();
+
+        if (ActivityCompat.checkSelfPermission(appContext,
+                Manifest.permission.USE_FINGERPRINT) !=
+                PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        manager.authenticate(cryptoObject, cancellationSignal, 0, this, null);
+    }
+
+    @Override
+    public void onAuthenticationError(int errMsgId,
+                                      CharSequence errString) {
+        Toast.makeText(appContext,
+                "Authentication error\n" + errString,
+                Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onAuthenticationHelp(int helpMsgId,
+                                     CharSequence helpString) {
+        Toast.makeText(appContext,
+                "Authentication help\n" + helpString,
+                Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onAuthenticationFailed() {
+
+        noOfAttempts++;
+        if(noOfAttempts==5){
+            noOfAttempts=0;
+            Intent i = new Intent();
+            i.setClass(appContext,fingerprintAuthRes.class);
+            String strName = "Not Authenticated";
+            i.putExtra("AUTH", strName);
+            appContext.startActivity(i);
+        }else{
+            Toast.makeText(appContext,
+                    "Authentication failed Try Again",
+                    Toast.LENGTH_LONG).show();
+        }
+
+    }
+
+    @Override
+    public void onAuthenticationSucceeded(
+            FingerprintManager.AuthenticationResult result) {
+        noOfAttempts = 0;
+        Toast.makeText(appContext,
+                "Authentication succeeded.",
+                Toast.LENGTH_LONG).show();
+
+//        this.mCallback.onAuthenticated();
+
+        Intent i = new Intent();
+        i.setClass(appContext,fingerprintAuthRes.class);
+        String strName = "Authenticated";
+        i.putExtra("AUTH", strName);
+        appContext.startActivity(i);
+
+    }
+
+}
